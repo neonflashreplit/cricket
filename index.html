@@ -1,0 +1,668 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Gully Cricket Score Tracker</title>  
+    <script src="https://cdn.tailwindcss.com"></script>  
+    <style>  
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');  
+        body {  
+            font-family: 'Inter', sans-serif;  
+            background-color: #f1f5f9; /* Slate 100 */  
+        }  
+        .card {  
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);  
+        }  
+        /* Custom class for the scoring buttons */  
+        .score-btn {  
+            @apply flex-1 p-16 m-1 rounded-lg text-xl font-bold transition duration-150 ease-in-out transform hover:scale-[1.03] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2;  
+        }  
+    </style>  
+</head>  
+<body class="min-h-screen p-2 md:p-6"> <script src="https://unpkg.com/lucide@latest"></script>  
+
+<div id="app" class="max-w-xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">  
+
+    <header class="bg-indigo-600 text-white p-4 rounded-t-xl">  
+        <h1 class="text-2xl font-extrabold tracking-tight">Gully Cricket</h1>  
+        <div class="text-sm opacity-90 mt-1 flex justify-between">  
+            <span id="datetime"></span>  
+            <span id="user-info" class="flex items-center">  
+                <i data-lucide="user" class="w-4 h-4 mr-1"></i> Player ID: <span id="user-id">Anonymous</span>  
+            </span>  
+        </div>  
+    </header>  
+
+    <main class="p-4 space-y-4">  
+          
+        <section id="setup-section" class="card p-4 bg-white rounded-lg border-t-4 border-indigo-500">  
+            <h2 class="text-lg font-semibold mb-3 text-gray-700">Match Setup</h2>  
+            <div class="space-y-3">  
+                <input type="text" id="team1-name" value="Team A" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 transition" placeholder="Team 1 Name">  
+                <input type="text" id="team2-name" value="Team B" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 transition" placeholder="Team 2 Name">  
+                <label class="block text-sm font-medium text-gray-700 mt-2">Total Overs:</label>  
+                <input type="number" id="total-overs" value="6" min="1" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 transition">  
+            </div>  
+            <button onclick="startGame()" class="mt-4 w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition">Start Match</button>  
+        </section>  
+
+        <section id="scoreboard-section" class="hidden space-y-4">  
+              
+            <div class="grid grid-cols-2 gap-3">  
+                <div id="batting-team-card" class="card p-4 bg-indigo-50 rounded-xl text-center border-b-4 border-indigo-700">  
+                    <p class="text-sm font-medium text-indigo-700"><span id="batting-team-display">Team A</span> (Batting)</p>  
+                    <p class="text-5xl font-extrabold text-indigo-900 mt-1 leading-none"><span id="score">0</span>/<span id="wickets">0</span></p>  
+                    <p class="text-md font-semibold text-gray-600 mt-2">Overs: <span id="overs">0.0</span></p>  
+                </div>  
+
+                <div id="bowling-team-card" class="card p-4 bg-white rounded-xl text-center border-b-4 border-gray-300">  
+                    <p class="text-sm font-medium text-gray-500"><span id="bowling-team-display">Team B</span></p>  
+                    <p class="text-3xl font-extrabold text-gray-800 mt-1 leading-none"><span id="target-display">--</span></p>  
+                    <p class="text-sm text-red-600 font-semibold mt-2 hidden" id="required-rr-container">RRR: <span id="required-rr">0.0</span></p>  
+                    <button onclick="swapInnings()" id="swap-button" class="mt-2 text-xs text-indigo-500 font-medium hover:text-indigo-700 transition">Start 2nd Innings</button>  
+                </div>  
+            </div>  
+
+            <div class="card p-3 bg-gray-700 rounded-lg">  
+                <p class="text-sm font-bold text-gray-200 mb-1">Last 6 Balls:</p>  
+                <div id="over-tracker" class="flex justify-between items-center h-8">  
+                    </div>  
+            </div>  
+
+            <div class="card p-3 bg-white rounded-xl border">  
+                <h3 class="text-center text-lg font-semibold text-gray-700 mb-2">SCORING</h3>  
+                  
+                <div class="flex justify-between mb-2">  
+                    <button class="score-btn bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500" onclick="addScore(0)">0</button>  
+                    <button class="score-btn bg-green-500 text-white hover:bg-green-600 focus:ring-green-500" onclick="addScore(1)">1</button>  
+                    <button class="score-btn bg-green-600 text-white hover:bg-green-700 focus:ring-green-600" onclick="addScore(2)">2</button>  
+                    <button class="score-btn bg-green-700 text-white hover:bg-green-800 focus:ring-green-700" onclick="addScore(3)">3</button>  
+                </div>  
+
+                <div class="flex justify-between mb-3">  
+                    <button class="score-btn bg-indigo-500 text-white hover:bg-indigo-600 focus:ring-indigo-500" onclick="addScore(4)">4</button>  
+                    <button class="score-btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-600" onclick="addScore(6)">6</button>  
+                </div>  
+
+                <div class="flex justify-between text-sm">  
+                    <button class="score-btn bg-yellow-400 text-yellow-900 hover:bg-yellow-500 focus:ring-yellow-400" onclick="addExtra('W')">WIDE (+1)</button>  
+                    <button class="score-btn bg-orange-400 text-orange-900 hover:bg-orange-500 focus:ring-orange-400" onclick="addExtra('N')">NO BALL (+1)</button>  
+                    <button class="score-btn bg-red-800 text-white hover:bg-red-900 focus:ring-red-800" onclick="addWicket()">WICKET</button>  
+                </div>  
+
+                <div class="mt-4 flex justify-between">  
+                     <button class="score-btn text-sm p-3 bg-gray-500 text-white hover:bg-gray-600 focus:ring-gray-500" onclick="undoLastAction()">UNDO</button>  
+                     <button class="score-btn text-sm p-3 bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500" onclick="resetGame()">RESET</button>  
+                </div>  
+
+            </div>  
+
+            <div class="card p-3 bg-white rounded-xl border">  
+                <h3 class="text-lg font-semibold text-gray-700 mb-3">Innings Summary</h3>  
+                  
+                <h4 class="text-md font-bold text-gray-600 mb-1" id="history-team1-title">Team A Scorecard</h4>  
+                <div id="history-team1" class="border rounded-lg overflow-x-auto mb-4 max-h-48">  
+                    <table class="min-w-full divide-y divide-gray-200">  
+                        <thead class="bg-gray-50 sticky top-0">  
+                            <tr>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Over</th>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ball 1</th>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ball 2</th>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ball 3</th>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ball 4</th>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ball 5</th>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ball 6</th>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Over Run</th>  
+                            </tr>  
+                        </thead>  
+                        <tbody id="team1-score-table" class="bg-white divide-y divide-gray-200 text-sm">  
+                            </tbody>  
+                    </table>  
+                </div>  
+                <p class="text-xl font-bold text-right text-gray-800 mt-2">Team A Total: <span id="team1-total-score">0</span></p>  
+                  
+                <hr class="my-4">  
+
+                <h4 class="text-md font-bold text-gray-600 mb-1" id="history-team2-title">Team B Scorecard</h4>  
+                <div id="history-team2" class="border rounded-lg overflow-x-auto max-h-48">  
+                    <table class="min-w-full divide-y divide-gray-200">  
+                         <thead class="bg-gray-50 sticky top-0">  
+                            <tr>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Over</th>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ball 1</th>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ball 2</th>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ball 3</th>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ball 4</th>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ball 5</th>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ball 6</th>  
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Over Run</th>  
+                            </tr>  
+                        </thead>  
+                        <tbody id="team2-score-table" class="bg-white divide-y divide-gray-200 text-sm">  
+                            </tbody>  
+                    </table>  
+                </div>  
+                <p class="text-xl font-bold text-right text-gray-800 mt-2">Team B Total: <span id="team2-total-score">0</span></p>  
+            </div>  
+        </section>  
+    </main>  
+</div>  
+
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden" onclick="hideModal()">  
+    <div class="bg-white p-6 rounded-xl max-w-sm w-full text-center" onclick="event.stopPropagation()">  
+        <h3 id="modal-title" class="text-xl font-bold mb-3 text-red-600"></h3>  
+        <p id="modal-message" class="text-gray-700 mb-4"></p>  
+        <button onclick="hideModal()" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700">OK</button>  
+    </div>  
+</div>  
+
+
+<script>  
+    // --- CONSTANTS AND STATE ---  
+    const totalBallsPerOver = 6;  
+    let state = {};  
+      
+    // Use a persistent ID for simple user identification  
+    const userId = 'GULLY-' + Math.random().toString(36).substring(2, 8).toUpperCase();  
+    document.getElementById('user-id').textContent = userId;  
+
+    // --- UTILITY FUNCTIONS ---  
+
+    function updateDateTime() {  
+        const now = new Date();  
+        const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };  
+        document.getElementById('datetime').textContent = now.toLocaleDateString('en-US', options);  
+    }  
+
+    function showModal(title, message, isError = false) {  
+        document.getElementById('modal-title').textContent = title;  
+        document.getElementById('modal-message').textContent = message;  
+        document.getElementById('modal-title').className = isError ? 'text-xl font-bold mb-3 text-red-600' : 'text-xl font-bold mb-3 text-green-600';  
+        document.getElementById('modal').classList.remove('hidden');  
+    }  
+
+    function hideModal() {  
+        document.getElementById('modal').classList.add('hidden');  
+    }  
+
+    function getBattingTeamScorecard() {  
+        return state.innings === 1 ? state.team1 : state.team2;  
+    }  
+      
+    function getBowlingTeamScorecard() {  
+        return state.innings === 1 ? state.team2 : state.team1;  
+    }  
+
+    // --- INITIALIZATION AND GAME FLOW ---  
+
+    function initGameState(team1Name, team2Name, totalOvers) {  
+        return {  
+            matchId: Date.now(),  
+            totalOvers: parseInt(totalOvers),  
+            team1: {  
+                name: team1Name,  
+                score: 0,  
+                wickets: 0,  
+                oversHistory: [], // Array of over arrays: [[1, 4, 0, W, 1, W], [2, 0, N+4, 1, 1, 6], ...]  
+                totalScore: 0,  
+                history: [] // Stack for undo: [{type: 'run', value: 4, ballAdded: true}]  
+            },  
+            team2: {  
+                name: team2Name,  
+                score: 0,  
+                wickets: 0,  
+                oversHistory: [],  
+                totalScore: 0,  
+                history: []  
+            },  
+            innings: 1, // 1 or 2  
+            currentOverBalls: 0, // 0 to 5 (legal balls)  
+            currentOverRuns: [], // Stores runs for current over (e.g., [1, 4, 'W'])  
+            target: null // Target set after innings 1  
+        };  
+    }  
+
+    function startGame() {  
+        const team1Name = document.getElementById('team1-name').value.trim() || 'Team A';  
+        const team2Name = document.getElementById('team2-name').value.trim() || 'Team B';  
+        const totalOvers = document.getElementById('total-overs').value.trim();  
+
+        if (totalOvers < 1) {  
+            showModal('Setup Error', 'Please enter a valid number of overs.', true);  
+            return;  
+        }  
+
+        state = initGameState(team1Name, team2Name, totalOvers);  
+        state.team1.name = team1Name; // Update state with user input  
+        state.team2.name = team2Name;  
+          
+        // Set initial UI elements  
+        document.getElementById('batting-team-display').textContent = state.team1.name;  
+        document.getElementById('bowling-team-display').textContent = state.team2.name;  
+        document.getElementById('history-team1-title').textContent = `${state.team1.name} Scorecard`;  
+        document.getElementById('history-team2-title').textContent = `${state.team2.name} Scorecard`;  
+        document.getElementById('target-display').textContent = `Target: --`;  
+
+
+        document.getElementById('setup-section').classList.add('hidden');  
+        document.getElementById('scoreboard-section').classList.remove('hidden');  
+        document.getElementById('swap-button').textContent = `End Innings (Target: 0)`;  
+          
+        updateDisplay();  
+    }  
+
+    function swapInnings() {  
+        if (state.innings === 1) {  
+            // End of Innings 1  
+            const batting = getBattingTeamScorecard();  
+            state.target = batting.score + 1;  
+
+            // Finalize Innings 1 score  
+            batting.totalScore = batting.score;  
+              
+            // Reset stats for Innings 2  
+            state.innings = 2;  
+            state.currentOverBalls = 0;  
+            state.currentOverRuns = [];  
+
+            // UI updates for Innings 2  
+            document.getElementById('batting-team-card').classList.remove('border-indigo-700');  
+            document.getElementById('batting-team-card').classList.add('border-blue-700');  
+            document.getElementById('bowling-team-card').classList.remove('border-gray-300');  
+            document.getElementById('bowling-team-card').classList.add('border-red-500');  
+
+            document.getElementById('required-rr-container').classList.remove('hidden');  
+            document.getElementById('swap-button').textContent = `End Match`;  
+            showModal('Innings Break', `${state.team1.name} finished with ${state.team1.totalScore}/${state.team1.wickets} in ${state.totalOvers} overs. ${state.team2.name} needs ${state.target} to win!`);  
+            updateDisplay();  
+        } else {  
+            // End of Innings 2 / Match End  
+            checkMatchEnd(true); // Force match end check  
+        }  
+    }  
+      
+    function checkMatchEnd(force = false) {  
+        const batting = getBattingTeamScorecard();  
+        const totalOversPlayed = batting.oversHistory.length * totalBallsPerOver + state.currentOverBalls;  
+
+        // Condition 1: All overs played  
+        const oversComplete = batting.oversHistory.length >= state.totalOvers;  
+
+        if (state.innings === 1 && oversComplete) {  
+            swapInnings();  
+            return true;  
+        }  
+
+        if (state.innings === 2) {  
+            // Condition 2: Target reached/surpassed  
+            if (batting.score >= state.target) {  
+                showModal('MATCH RESULT', `${batting.name} WON by ${10 - batting.wickets} wickets!`);  
+                document.getElementById('swap-button').disabled = true;  
+                return true;  
+            }  
+              
+            // Condition 3: Overs complete in 2nd innings  
+            if (oversComplete) {  
+                const diff = state.target - 1 - batting.score;  
+                if (diff === 0) {  
+                     showModal('MATCH RESULT', `It's a TIE!`);  
+                } else {  
+                     showModal('MATCH RESULT', `${getBowlingTeamScorecard().name} WON by ${diff} runs!`);  
+                }  
+                document.getElementById('swap-button').disabled = true;  
+                return true;  
+            }  
+
+            // Condition 4: All out  
+            if (batting.wickets >= 10) {  
+                 const diff = state.target - 1 - batting.score;  
+                 showModal('MATCH RESULT', `${getBowlingTeamScorecard().name} WON by ${diff} runs!`);  
+                 document.getElementById('swap-button').disabled = true;  
+                 return true;  
+            }  
+        }  
+          
+        if (force) {  
+            // If force-ending the match  
+            showModal('Match Ended', 'The game has been manually ended. Check the summary table for scores.', false);  
+            document.getElementById('swap-button').disabled = true;  
+            return true;  
+        }  
+        return false;  
+    }  
+
+    // --- SCORING ACTIONS ---  
+
+    function addScore(runs) {  
+        if (checkMatchEnd()) return;  
+
+        const batting = getBattingTeamScorecard();  
+          
+        // 1. Update Score  
+        batting.score += runs;  
+          
+        // 2. Track Ball  
+        state.currentOverRuns.push(runs);  
+        state.currentOverBalls++; // Legal delivery  
+          
+        // 3. Track History for Undo  
+        batting.history.push({ type: 'run', value: runs, ballAdded: true });  
+          
+        // 4. Check for Over/Match End  
+        handleBallEnd();  
+    }  
+
+    function addExtra(type) {  
+        if (checkMatchEnd()) return;  
+
+        const batting = getBattingTeamScorecard();  
+        const runValue = 1; // 1 run for wide/no ball  
+          
+        // 1. Update Score  
+        batting.score += runValue; // Adds the initial 1 for the extra (Correct)
+          
+        // 2. Track Ball (Does NOT increment state.currentOverBalls)  
+        const label = type === 'W' ? 'W' : 'NB';  
+        // FIX: Removed the incorrect duplicate score increment: batting.score += 1;
+        state.currentOverRuns.push(label + `+${runValue}`);  
+
+        // 3. Track History for Undo (no ball added)  
+        batting.history.push({ type: 'extra', value: runValue, label: label, ballAdded: false });  
+
+        // 4. Update Display  
+        updateDisplay();  
+    }  
+
+    function addWicket() {  
+        if (checkMatchEnd()) return;  
+
+        const batting = getBattingTeamScorecard();  
+
+        if (batting.wickets < 10) {  
+            // 1. Update Wickets  
+            batting.wickets++;  
+              
+            // 2. Track Ball  
+            state.currentOverRuns.push('W');  
+            state.currentOverBalls++; // Wicket is a legal delivery  
+              
+            // 3. Track History for Undo  
+            batting.history.push({ type: 'wicket', ballAdded: true });  
+
+            // 4. Check for Over/Match End  
+            handleBallEnd();  
+        }  
+    }  
+      
+    function handleBallEnd() {  
+        const batting = getBattingTeamScorecard();  
+          
+        if (state.currentOverBalls >= totalBallsPerOver) {  
+            // Over Complete  
+            const overSummary = state.currentOverRuns.map(r => r.toString());  
+              
+            // Push the completed over history  
+            batting.oversHistory.push(overSummary);  
+              
+            // Reset for next over  
+            state.currentOverBalls = 0;  
+            state.currentOverRuns = [];  
+        }  
+          
+        // Check for match end condition after every ball  
+        checkMatchEnd();  
+          
+        // Update UI  
+        updateDisplay();  
+    }  
+      
+    function undoLastAction() {  
+        const batting = getBattingTeamScorecard();  
+        const lastAction = batting.history.pop();  
+          
+        if (!lastAction) {  
+            showModal('Undo Failed', 'No actions found to undo.', true);  
+            return;  
+        }  
+
+        // 1. Undo Score change  
+        if (lastAction.type === 'run' || lastAction.type === 'extra') {  
+            batting.score -= lastAction.value;  
+        } else if (lastAction.type === 'wicket') {  
+            batting.wickets--;  
+        }  
+
+        // 2. Undo Ball tracking  
+        // Check if the action caused the ball count to increment  
+        if (lastAction.ballAdded) {  
+            if (state.currentOverBalls > 0) {  
+                // Remove the last ball from the current over  
+                state.currentOverRuns.pop();  
+                state.currentOverBalls--;  
+            } else {  
+                // Must undo the entire previous over  
+                const lastOver = batting.oversHistory.pop();  
+                if (lastOver) {  
+                    state.currentOverRuns = lastOver;  
+                    // Count how many legal balls were in the previous over  
+                    state.currentOverBalls = lastOver.filter(ball => !['W+1', 'NB+1'].includes(ball)).length;   
+                }  
+                state.currentOverRuns.pop(); // Remove the actual last entry  
+                state.currentOverBalls--;  
+            }  
+        } else {  
+             // If it was an extra that didn't count as a ball (W or NB)  
+             state.currentOverRuns.pop();  
+        }  
+
+        // Update Total Score Display (in case of Innings 1 undo)  
+        if (state.innings === 2) {  
+            state.target = state.team1.totalScore + 1;  
+        } else {  
+            state.team1.totalScore = batting.score;  
+        }  
+
+        updateDisplay();  
+    }  
+      
+    function resetGame() {  
+        if (window.confirm("Are you sure you want to reset the entire match? This action cannot be undone.")) {  
+             // Clear state and restart setup  
+             state = {};  
+             document.getElementById('setup-section').classList.remove('hidden');  
+             document.getElementById('scoreboard-section').classList.add('hidden');  
+             document.getElementById('team1-score-table').innerHTML = '';  
+             document.getElementById('team2-score-table').innerHTML = '';  
+             document.getElementById('swap-button').disabled = false;  
+             document.getElementById('required-rr-container').classList.add('hidden');  
+             updateDisplay(); // Clears residual info  
+        }  
+    }  
+
+    // --- UI RENDERING ---  
+
+    function formatOvers(over, ball) {  
+         const totalBallsPlayed = (over * totalBallsPerOver) + ball;  
+         const completedOvers = Math.floor(totalBallsPlayed / totalBallsPerOver);  
+         const remainingBalls = totalBallsPlayed % totalBallsPerOver;  
+         return `${completedOvers}.${remainingBalls}`;  
+    }  
+      
+    function calculateRequiredRunRate(runsScored, ballsPlayed, target) {  
+        const runsNeeded = target - 1 - runsScored;  
+        const totalBalls = state.totalOvers * totalBallsPerOver;  
+        const ballsRemaining = totalBalls - ballsPlayed;  
+
+        if (runsNeeded <= 0) return 0.0;  
+        if (ballsRemaining <= 0) return runsNeeded > 0 ? 'N/A' : 0.0;  
+          
+        const rrr = (runsNeeded / ballsRemaining) * 6;  
+        return rrr.toFixed(2);  
+    }  
+
+    function updateDisplay() {  
+        if (!state || !state.team1) {  
+            document.getElementById('score').textContent = '0';  
+            document.getElementById('wickets').textContent = '0';  
+            document.getElementById('overs').textContent = '0.0';  
+            document.getElementById('team1-total-score').textContent = '0';  
+            document.getElementById('team2-total-score').textContent = '0';  
+            document.getElementById('over-tracker').innerHTML = '';  
+            return;  
+        }  
+
+        const batting = getBattingTeamScorecard();  
+        const bowling = getBowlingTeamScorecard();  
+
+        const completedOvers = batting.oversHistory.length;  
+        const totalOversPlayed = formatOvers(completedOvers, state.currentOverBalls);  
+          
+        // --- MAIN SCORECARD ---  
+        document.getElementById('batting-team-display').textContent = batting.name;  
+        document.getElementById('bowling-team-display').textContent = bowling.name;  
+        document.getElementById('score').textContent = batting.score;  
+        document.getElementById('wickets').textContent = batting.wickets;  
+        document.getElementById('overs').textContent = totalOversPlayed;  
+          
+        // --- TARGET/INNINGS INFO ---  
+        if (state.innings === 2) {  
+            document.getElementById('target-display').textContent = `Needs ${state.target - batting.score} off ${state.totalOvers * totalBallsPerOver - (completedOvers * totalBallsPerOver + state.currentOverBalls)} balls`;  
+            const ballsPlayed = completedOvers * totalBallsPerOver + state.currentOverBalls;  
+            document.getElementById('required-rr').textContent = calculateRequiredRunRate(batting.score, ballsPlayed, state.target);  
+        } else {  
+             document.getElementById('target-display').textContent = `Target: ${batting.score + 1}`;  
+             document.getElementById('swap-button').textContent = `End Innings (Target: ${batting.score + 1})`;  
+             document.getElementById('required-rr-container').classList.add('hidden');  
+        }  
+
+
+        // --- OVER TRACKER ---  
+        const trackerDiv = document.getElementById('over-tracker');  
+        trackerDiv.innerHTML = '';  
+          
+        // Display balls that have been scored this over  
+        state.currentOverRuns.forEach(run => {  
+            let colorClass = 'bg-gray-400 text-white';  
+            if (run === 4) colorClass = 'bg-indigo-500 text-white';  
+            else if (run === 6) colorClass = 'bg-red-500 text-white';  
+            else if (run === 'W') colorClass = 'bg-red-800 text-white';  
+            else if (run.toString().includes('W')) colorClass = 'bg-yellow-400 text-yellow-900';  
+            else if (run.toString().includes('NB')) colorClass = 'bg-orange-400 text-orange-900';  
+            else if (run > 0) colorClass = 'bg-green-500 text-white';  
+              
+            const ballEl = document.createElement('div');  
+            ballEl.className = `w-8 h-8 flex items-center justify-center rounded-full font-bold text-xs ${colorClass}`;  
+            ballEl.textContent = run;  
+            trackerDiv.appendChild(ballEl);  
+        });  
+          
+        // Display empty balls remaining  
+        const legalBallsScored = state.currentOverBalls;  
+        const emptyBalls = totalBallsPerOver - legalBallsScored;  
+        for (let i = 0; i < emptyBalls; i++) {  
+             const ballEl = document.createElement('div');  
+             ballEl.className = `w-8 h-8 flex items-center justify-center rounded-full border border-dashed border-gray-400 text-gray-400 text-xs`;  
+             ballEl.textContent = '-';  
+             trackerDiv.appendChild(ballEl);  
+        }  
+
+        // --- SCORE HISTORY TABLES ---  
+        updateScoreTable('team1', state.team1);  
+        updateScoreTable('team2', state.team2);  
+
+        // Update Total Scores  
+        document.getElementById('team1-total-score').textContent = state.team1.score;  
+        document.getElementById('team2-total-score').textContent = state.team2.score;  
+    }  
+
+    function updateScoreTable(teamId, teamData) {  
+        const tableBody = document.getElementById(`${teamId}-score-table`);  
+        tableBody.innerHTML = ''; // Clear existing rows  
+          
+        teamData.oversHistory.forEach((overRuns, index) => {  
+            const overNumber = index + 1;  
+            const row = document.createElement('tr');  
+            row.className = 'hover:bg-gray-100';  
+
+            // Over Number Cell  
+            let rowContent = `<td class="px-3 py-2 whitespace-nowrap font-medium text-gray-900">${overNumber}</td>`;  
+              
+            let overTotal = 0;  
+            let ballCells = [];  
+            let ballCount = 0; // Tracks legal balls for columns 1-6  
+
+            // Create a list of 6 cells for the balls  
+            for (let i = 0; i < 6; i++) {  
+                ballCells.push(`<td class="px-3 py-2 whitespace-nowrap text-gray-500">-</td>`);  
+            }  
+
+            overRuns.forEach(ballResult => {  
+                let runValue = 0;  
+                let display = ballResult.toString();  
+                let extra = false;  
+                  
+                if (display === 'W') {  
+                    runValue = 0;  
+                    display = 'W';  
+                } else if (display.includes('+')) {  
+                    // Wide or No ball (e.g., W+1, NB+4)  
+                    const parts = display.split('+');  
+                    const base = parts[0];  
+                    // Since we've fixed addExtra to only add 1, 
+                    // this parsing should be updated if multiple runs are intended on an extra. 
+                    // Assuming only 1 run for the extra delivery itself.
+                    const runs = 1; // Since runValue is 1 in addExtra now.
+                      
+                    runValue = runs;  
+                    display = base;  
+                    extra = true;  
+
+                } else {  
+                    runValue = parseInt(display);  
+                }  
+                  
+                overTotal += runValue;  
+
+                // Only map legal deliveries to the 6 ball columns  
+                if (!extra && ballCount < 6) {  
+                    let color = '';  
+                    if (display === '4') color = 'text-indigo-600 font-bold';  
+                    else if (display === '6') color = 'text-red-600 font-bold';  
+                    else if (display === 'W') color = 'text-red-800 font-bold bg-red-100 rounded-sm';  
+
+                    ballCells[ballCount] = `<td class="px-3 py-2 whitespace-nowrap text-gray-500 ${color}">${display}</td>`;  
+                    ballCount++;  
+                } else {  
+                     // Add extras as a separate cell dynamically (as per gully rules, columns increase)  
+                     // We display the original ballResult to show the label (W+1, NB+1)
+                     rowContent += `<td class="px-3 py-2 whitespace-nowrap text-gray-500 bg-yellow-100">${ballResult}</td>`;  
+                }  
+            });  
+              
+            // Add the 6 main ball cells  
+            rowContent += ballCells.join('');  
+
+            // Over Total Cell  
+            rowContent += `<td class="px-3 py-2 whitespace-nowrap font-extrabold text-indigo-700">${overTotal}</td>`;  
+              
+            row.innerHTML = rowContent;  
+            tableBody.appendChild(row);  
+        });  
+    }  
+
+
+    // --- SETUP AND LIFECYCLE ---  
+    window.onload = function() {  
+        // Initial call to set time  
+        updateDateTime();  
+        // Update time every second  
+        setInterval(updateDateTime, 1000);  
+        // Initialize display placeholders  
+        updateDisplay();  
+    };  
+
+</script>
+
+</body>  
+</html>
